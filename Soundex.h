@@ -1,70 +1,53 @@
 #ifndef SOUNDEX_H
 #define SOUNDEX_H
-
+ 
 #include <ctype.h>
 #include <string.h>
-#include <stdbool.h>
-
-#define SOUNDEX_LENGTH 4
-
+#include <stdio.h>
+ 
 char getSoundexCode(char c) {
-    c = toupper((unsigned char)c);
-    switch (c) {
-        case 'B': case 'F': case 'P': case 'V': return '1';
-        case 'C': case 'G': case 'J': case 'K': case 'Q': case 'S': case 'X': case 'Z': return '2';
-        case 'D': case 'T': return '3';
-        case 'L': return '4';
-        case 'M': case 'N': return '5';
-        case 'R': return '6';
-        default: return '0';
+    static const char codeTable[26] = {
+        '0', '1', '2', '3', '0', '1', '2', '0', '0', // A-I
+        '2', '2', '4', '5', '5', '0', '1', '2', '6', // J-R
+        '2', '3', '0', '1', '0', '2', '0', '2'      // S-Z
+    };
+     c = toupper(c);
+    if (isalpha(c)) {
+        return codeTable[c - 'A'];
     }
+    return '0';
+}  
+ 
+int SoundexUpdat(char code, int sIndex, char *soundex) {
+    int notZero = code != '0';
+    if (notZero) {
+        soundex[sIndex] = code;
+        return ++sIndex;
+    } 
+    soundex[sIndex] = soundex[sIndex];
+    return sIndex;
 }
-
-bool isAlpha(char c) {
-    return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
+void generateSoundex(const char *name, char *soundex) {
+    soundex[0] = toupper(name[0]);
+    int sIndex = 1;
+ 
+     for (int i = 1; name[i] != '\0' && sIndex < 4; i++) {
+        char code = getSoundexCode(name[i]);
+        sIndex = SoundexUpdate(code, sIndex, soundex);
+        // soundex[sIndex] = (code != '0') ? code : soundex[sIndex];
+        // sIndex += (code != '0');
+    }
+    memset(soundex + sIndex, '0', 4 - sIndex);
+    soundex[4] = '\0';
 }
-
-int generateSoundex(const char *name, char *soundex, size_t soundexSize) {
-    if (name == NULL || soundex == NULL || soundexSize < SOUNDEX_LENGTH + 1) {
-        return -1;
-    }
-
-    int nameLen = strlen(name);
-    if (nameLen == 0) {
-        return -2;
-    }
-
-    int i = 0;
-    int sIndex = 0;
-
-    while (i < nameLen && !isAlpha(name[i])) {
-        i++;
-    }
-
-    if (i == nameLen) {
-        return -3;
-    }
-
-    soundex[sIndex++] = toupper((unsigned char)name[i++]);
-    char lastCode = '0';
-
-    while (i < nameLen && sIndex < SOUNDEX_LENGTH) {
-        if (isAlpha(name[i])) {
-            char code = getSoundexCode(name[i]);
-            if (code != '0' && code != lastCode) {
-                soundex[sIndex++] = code;
-                lastCode = code;
-            }
-        }
-        i++;
-    }
-
-    while (sIndex < SOUNDEX_LENGTH) {
-        soundex[sIndex++] = '0';
-    }
-
-    soundex[SOUNDEX_LENGTH] = '\0';
+ 
+int main() {
+    const char *name = "robert";
+    char soundex[5];
+ 
+    generateSoundex(name, soundex);
+    printf("Soundex code for '%s' is '%s'\n", name, soundex);
+ 
     return 0;
 }
-
-#endif
+#endif // SOUNDEX_H
