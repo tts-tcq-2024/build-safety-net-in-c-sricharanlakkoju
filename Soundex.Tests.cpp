@@ -15,7 +15,7 @@ ASSERT_STREQ(soundex," 000");
 TEST(SoundexTestsuite, ReplacesConsonantsWithAppropriateDigits_2) {
 //AAA
   char soundex[5];
-genrateSoundex("*#12hi", soundex);
+generateSoundex("*#12hi", soundex);
 ASSERT_STREQ(soundex,"*000");
 }
 TEST(SoundexTestsuite, ReplacesConsonantsWithAppropriateDigits_vowels) {
